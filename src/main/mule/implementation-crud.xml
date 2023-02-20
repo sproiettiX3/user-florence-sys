@@ -89,7 +89,7 @@ output application/json
 output application/json
 ---
 {
-	message:"User partially updated!"
+	message:"User address or mail updated!"
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
