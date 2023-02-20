@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<flow name="getUsers" doc:id="7f449cd5-1a59-470d-9861-67f5c50efec1" >
+		<db:select doc:name="Select" doc:id="8580a3c6-f562-4987-9c24-7d511e61b302" config-ref="Database_Config_MySql">
+			<db:sql ><![CDATA[#["SELECT * FROM user WHERE id is not null " ++ (if(attributes.queryParams.usersName != null and !isEmpty(attributes.queryParams.usersName)) "and name = :name "  else "")
+++ (if(attributes.queryParams.usersSurname != null and !isEmpty(attributes.queryParams.usersSurname)) "and surname = :surname "  else "")]]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{name:attributes.queryParams.usersName, surname: attributes.queryParams.usersSurname}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="e2ad7891-0ea9-4bf7-8638-b41f520af15b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	id: payload01.id,
+	name: payload01.name,
+	surname: payload01.surname,
+	mail: payload01.mail,
+	address: payload01.address
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="getUserById" doc:id="9b39cbce-2203-4599-aa4d-3a56247e8035" >
+		<db:select doc:name="Select" doc:id="8da3c6f0-14ac-4974-887d-f8bc92960c1c" config-ref="Database_Config_MySql">
+			<db:sql ><![CDATA[SELECT * FROM user WHERE id = :id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{'id':attributes.uriParams["id"]}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="826ac587-ab55-4ce0-a5ce-520829fcec89" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+---
+
+payload[0]
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="postUsers" doc:id="1f8c4efe-1af4-4041-85c1-8c130af6c658" >
+		<db:insert doc:name="Insert" doc:id="3f381ca4-ba02-4a6a-8d3a-6bf56e3a11a0" config-ref="Database_Config_MySql">
+			<db:sql ><![CDATA[INSERT INTO user (name, surname, mail, address) VALUES (:name, :surname, :mail, :address)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="27cc3fd6-791e-46af-af6d-d962ab2078af" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "User created!"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="putUsers" doc:id="a0daab90-3902-4027-ae4b-c407c74e83cb" >
+		<db:update doc:name="Update" doc:id="b3214c80-947b-41d8-ac34-010723bf918c" config-ref="Database_Config_MySql">
+			<db:sql ><![CDATA[UPDATE user SET name = :name, surname = :surname, mail = :mail, address = :address WHERE id = :id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{name:payload.name, surname:payload.surname, address:payload.address, mail:payload.mail, id:attributes.uriParams.id}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="53fe3daf-8f98-419a-8221-efdb2dedf0b1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "User updated!"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="patchUsers" doc:id="7b56cef8-30e2-4066-98f8-143b323bbcc5" >
+		<db:update doc:name="Update" doc:id="5824af9d-39ef-4031-a362-f0017a52b084" config-ref="Database_Config_MySql">
+			<db:sql ><![CDATA[#["UPDATE user SET " ++ (if(payload.mail != null and !isEmpty(payload.mail)) "mail= :mail, "  else "mail= mail, ") ++ (if(payload.address != null and !isEmpty(payload.address)) "address= :address "  else "address= address ") ++ "WHERE id= :id "]]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{mail:payload.mail, address:payload.address, id:attributes.uriParams.id}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="0eafa8f4-fe78-4bd3-8973-6290224500c5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message:"User partially updated!"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="deleteUsers" doc:id="73fe4436-3af3-4353-b332-7fbba872f6c3" >
+		<db:delete doc:name="Delete" doc:id="6bf70bf6-4b43-4082-8277-623093ae7a8b" config-ref="Database_Config_MySql">
+			<db:sql ><![CDATA[DELETE FROM user WHERE id = :id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{id:attributes.uriParams.id}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="1a796b39-02a8-45c6-bf75-37fdb61010c1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message:"User deleted!"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

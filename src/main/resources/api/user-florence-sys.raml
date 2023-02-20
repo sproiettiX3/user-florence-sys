@@ -1,0 +1,80 @@
+#%RAML 1.0
+title: user-florence-sys
+
+types:
+  UsersDataType: !include datatype/usersDataType.raml
+  UsersDataTypeUpdate: !include datatype/usersDataTypeUpdate.raml
+
+/users:
+  get:
+    queryParameters:    
+      usersName: 
+        type: string
+        required: false  
+      usersSurname:
+        type: string        
+        required: false    
+    responses:
+      200:
+        body:
+          application/json: 
+            type: UsersDataType[]
+            examples:
+              output: !include examples/usersExampleArray.raml
+                
+                
+  post:
+    body:
+      application/json:
+        type: UsersDataType
+        examples:
+          input: !include examples/usersExample.raml  
+    responses:
+      201:
+        body:
+          application/json: 
+            example:
+              message: User created!
+              
+            
+  
+
+  /{id}:
+    get:
+      responses:
+        200:
+          body:
+            application/json: 
+              type: UsersDataType
+    
+    put:
+      body:
+        application/json:
+          type: UsersDataTypeUpdate           
+      responses:
+        201:
+          body:
+            application/json: 
+              example:
+                message: User updated!
+
+    patch:
+      body:
+        application/json:
+          type: UsersDataTypeUpdate 
+          examples:
+              input: !include examples/usersExamplePatch.raml      
+      responses:
+        201:
+          body:
+            application/json: 
+              example:
+                message: User address updated!        
+  
+    delete: 
+      responses:
+          200:
+            body:
+              application/json:
+                example:
+                  message: User deleted!
