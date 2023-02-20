@@ -4,6 +4,7 @@ title: user-florence-sys
 types:
   UsersDataType: !include datatype/usersDataType.raml
   UsersDataTypeUpdate: !include datatype/usersDataTypeUpdate.raml
+  UsersDataTypePatch: !include datatype/usersDataTypePatch.raml
 
 /users:
   get:
@@ -50,7 +51,7 @@ types:
     put:
       body:
         application/json:
-          type: UsersDataTypeUpdate           
+          type: UsersDataTypeUpdate    
       responses:
         201:
           body:
@@ -61,7 +62,7 @@ types:
     patch:
       body:
         application/json:
-          type: UsersDataTypeUpdate 
+          type: UsersDataTypePatch
           examples:
               input: !include examples/usersExamplePatch.raml      
       responses:
@@ -69,7 +70,7 @@ types:
           body:
             application/json: 
               example:
-                message: User address updated!        
+                message: User address or mail updated!        
   
     delete: 
       responses:
