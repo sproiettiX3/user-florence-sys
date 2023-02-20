@@ -27,9 +27,9 @@ types:
   post:
     body:
       application/json:
-        type: UsersDataType
+        type: UsersDataType[]
         examples:
-          input: !include examples/usersExample.raml  
+          input: !include examples/usersExampleArray.raml  
     responses:
       201:
         body:

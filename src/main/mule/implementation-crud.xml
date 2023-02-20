@@ -47,13 +47,15 @@ payload[0]
 		</ee:transform>
 	</flow>
 	<flow name="postUsers" doc:id="1f8c4efe-1af4-4041-85c1-8c130af6c658" >
-		<db:insert doc:name="Insert" doc:id="3f381ca4-ba02-4a6a-8d3a-6bf56e3a11a0" config-ref="Database_Config_MySql">
-			<db:sql ><![CDATA[INSERT INTO user (name, surname, mail, address) VALUES (:name, :surname, :mail, :address)]]></db:sql>
-			<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
+		<foreach doc:name="For Each" doc:id="f2917c96-5919-4fb6-841d-759d4c484016" >
+			<db:insert doc:name="Insert" doc:id="3f381ca4-ba02-4a6a-8d3a-6bf56e3a11a0" config-ref="Database_Config_MySql">
+			<db:sql><![CDATA[INSERT INTO user (name, surname, mail, address) VALUES (:name, :surname, :mail, :address)]]></db:sql>
+			<db:input-parameters><![CDATA[#[{name: payload.name, surname: payload.surname, mail: payload.mail, address: payload.address}]]]></db:input-parameters>
 		</db:insert>
-		<ee:transform doc:name="Transform Message" doc:id="27cc3fd6-791e-46af-af6d-d962ab2078af" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		</foreach>
+		<ee:transform doc:name="Transform Message" doc:id="27cc3fd6-791e-46af-af6d-d962ab2078af">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
